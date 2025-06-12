@@ -1,0 +1,38 @@
+<odoo>
+    <record id="view_bol_inquiry_tree" model="ir.ui.view">
+        <field name="name">bol.inquiry.tree</field>
+        <field name="model">bol.inquiry</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="inquiry_id"/>
+                <field name="customer_name"/>
+                <field name="email"/>
+                <field name="date_created"/>
+                <field name="helpdesk_ticket_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_bol_inquiry_form" model="ir.ui.view">
+        <field name="name">bol.inquiry.form</field>
+        <field name="model">bol.inquiry</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="inquiry_id"/>
+                    <field name="customer_name"/>
+                    <field name="email"/>
+                    <field name="question"/>
+                    <field name="date_created"/>
+                    <field name="helpdesk_ticket_id"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <menuitem id="menu_bol_root" name="Bol.com"/>
+    <menuitem id="menu_bol_inquiry" name="Klantvragen" parent="menu_bol_root"/>
+    <act_window id="action_bol_inquiry" name="Bol Klantvragen"
+        res_model="bol.inquiry" view_mode="tree,form"
+        menu_id="menu_bol_inquiry"/>
+</odoo>
