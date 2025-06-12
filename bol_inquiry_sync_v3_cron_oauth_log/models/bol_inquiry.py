@@ -61,10 +61,10 @@ class BolInquirySync(models.Model):
                     "helpdesk_ticket_id": helpdesk_ticket.id,
                 })
 
-        self.write({'sync_log': '\n'.join(log), 'sync_last_run': datetime.now()})
-        except Exception as e:
-            _logger = tools.logging.getLogger(__name__)
-            _logger.error("Fout bij ophalen bol.com inquiries: %s", str(e))
+       try:
+    self.write({'sync_log': '\n'.join(log), 'sync_last_run': datetime.now()})
+except Exception as e:
+    _logger.error("Fout bij synchronisatie: %s", str(e))
 
 from odoo import models, tools
 import requests
