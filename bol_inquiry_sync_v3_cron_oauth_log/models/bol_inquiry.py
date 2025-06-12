@@ -1,11 +1,13 @@
-from odoo import models, fields
+import requests
+from odoo import models, fields, tools
+from datetime import datetime
 
 class BolInquiry(models.Model):
+    _name = "bol.inquiry"
+    _description = "Bol.com Klantvraag"
 
     sync_log = fields.Text(string="Laatste Synchronisatie Log")
     sync_last_run = fields.Datetime(string="Laatste Uitvoering")
-    _name = "bol.inquiry"
-    _description = "Bol.com Klantvraag"
 
     inquiry_id = fields.Char(string="Bol Inquiry ID", required=True, index=True)
     customer_name = fields.Char(string="Klantnaam")
@@ -14,8 +16,6 @@ class BolInquiry(models.Model):
     date_created = fields.Datetime(string="Aangemaakt op")
     helpdesk_ticket_id = fields.Many2one("helpdesk.ticket", string="Helpdesk Ticket")
 
-import requests
-from odoo import models, fields, tools
 
 class BolInquirySync(models.Model):
     _inherit = 'bol.inquiry'
@@ -26,7 +26,6 @@ class BolInquirySync(models.Model):
     def _cron_fetch_inquiries(self):
         self.ensure_one()
         log = []
-        from datetime import datetime
         token = self._get_bol_access_token()
         if not token:
             return
@@ -38,21 +37,23 @@ class BolInquirySync(models.Model):
         url = "https://api.bol.com/retailer/inquiries"
 
         try:
-            log.append(f'Ophalen gestart'); response = requests.get(url, headers=headers, timeout=30)
+            log.append('Ophalen gestart')
+            response = requests.get(url, headers=headers, timeout=30)
             response.raise_for_status()
             data = response.json()
 
             for item in data.get("inquiries", []):
                 inquiry_id = item.get("id")
                 if self.env["bol.inquiry"].search([("inquiry_id", "=", inquiry_id)], limit=1):
-                    continue  # al geïmporteerd
+                    continue  # Already imported
 
-                log.append(f'Nieuw ticket aangemaakt voor {item.get("customerName")}'); helpdesk_ticket = self.env["helpdesk.ticket"].create({
+                log.append(f'Nieuw ticket aangemaakt voor {item.get("customerName")}')
+                helpdesk_ticket = self.env["helpdesk.ticket"].create({
                     "name": f"Bol.com vraag van {item.get('customerName')}",
                     "description": item.get("question"),
                 })
 
-                rec = self.create({
+                self.create({
                     "inquiry_id": inquiry_id,
                     "customer_name": item.get("customerName"),
                     "email": item.get("customerEmail"),
@@ -61,13 +62,12 @@ class BolInquirySync(models.Model):
                     "helpdesk_ticket_id": helpdesk_ticket.id,
                 })
 
-       try:
-    self.write({'sync_log': '\n'.join(log), 'sync_last_run': datetime.now()})
-except Exception as e:
-    _logger.error("Fout bij synchronisatie: %s", str(e))
+            self.write({'sync_log': '\n'.join(log), 'sync_last_run': datetime.now()})
 
-from odoo import models, tools
-import requests
+        except Exception as e:
+            _logger = tools.logging.getLogger(__name__)
+            _logger.error("Fout bij synchronisatie: %s", str(e))
+
 
 class BolOAuthToken(models.Model):
     _inherit = 'bol.inquiry'
@@ -98,7 +98,6 @@ class BolOAuthToken(models.Model):
                 self.env['ir.config_parameter'].sudo().set_param("bol_inquiry_sync.access_token", access_token)
                 return access_token
 
-        self.write({'sync_log': '\n'.join(log), 'sync_last_run': datetime.now()})
         except Exception as e:
             _logger = tools.logging.getLogger(__name__)
             _logger.error("Fout bij vernieuwen bol.com access token: %s", str(e))
