@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="website_homepage" model="website.page">
+            <field name="name">Home</field>
+            <field name="website_id" ref="website.default_website"/>
+            <field name="url">/</field>
+            <field name="type">qweb</field>
+            <field name="view_id" ref="website.homepage"/>
+        </record>
+
+        <template id="website.homepage" name="Homepage">
+            <t t-call="website.layout">
+                <div class="container mt-5 mb-5">
+                    <div class="row align-items-center">
+                        <div class="col-lg-6 text-center text-lg-left">
+                            <img src="/web/image/website/logo" alt="Logo" class="img-fluid" style="max-height: 120px;"/>
+                            <h1 class="display-4 mt-3 text-gold">Kapsalon Steff's D-Team</h1>
+                            <p class="lead">Hairdresser of the Year 2015 – Sinds 1985 actief in Bertem</p>
+                            <a href="/contactus" class="btn btn-gold mt-3">Afspraak maken</a>
+                        </div>
+                        <div class="col-lg-6">
+                            <img src="/web/image/website.salon_image" alt="Salon" class="img-fluid rounded shadow"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+    </data>
+</odoo>
